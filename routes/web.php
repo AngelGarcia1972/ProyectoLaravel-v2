@@ -4,6 +4,7 @@ use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoDemoController;
 use App\Http\Controllers\TwoFactorController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -45,3 +46,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/disable', [TwoFactorController::class, 'disable'])->name('disable');
     });
 });
+
+/*
+ * Sobrescritura de rutas Fortify con throttle adicional
+ */
+Route::post('/forgot-password', function (Request $request) {
+    return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)->store($request);
+})->middleware(['throttle:sensible'])->name('password.email');
+
+Route::post('/reset-password', function (Request $request) {
+    return app(\Laravel\Fortify\Http\Controllers\NewPasswordController::class)->store($request);
+})->middleware(['throttle:sensible'])->name('password.update');

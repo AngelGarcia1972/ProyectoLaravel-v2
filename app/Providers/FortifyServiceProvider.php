@@ -6,8 +6,10 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -33,11 +35,33 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::registerView(fn () => view('auth.register'));
         Fortify::twoFactorChallengeView(fn () => view('auth.two-factor-challenge'));
         Fortify::confirmPasswordView(fn () => view('auth.passwords.confirm'));
+        Fortify::requestPasswordResetLinkView(fn () => view('auth.forgot-password'));
+        Fortify::resetPasswordView(fn (Request $request) => view('auth.reset-password', ['request' => $request]));
 
-        RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+        Fortify::authenticateUsing(function (Request $request) {
+            $key = $request->ip() . '|' . $request->input('email');
+            $limiterKey = 'login-attempts:' . $key;
 
-            return Limit::perMinute(5)->by($throttleKey);
+            if (RateLimiter::tooManyAttempts($limiterKey, 5)) {
+                $seconds = RateLimiter::availableIn($limiterKey);
+                abort(429, 'Demasiados intentos. Espera ' . $seconds . ' segundos.');
+            }
+
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                RateLimiter::hit($limiterKey, 300);
+
+                if (RateLimiter::attempts($limiterKey) >= 3 && $user) {
+                    $user->notify(new \App\Notifications\IntentosLoginSospechosos($request->ip()));
+                }
+
+                return null;
+            }
+
+            RateLimiter::clear($limiterKey);
+
+            return $user;
         });
 
         RateLimiter::for('two-factor', function (Request $request) {

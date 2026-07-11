@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -116,6 +117,31 @@ return [
             'driver' => 'errorlog',
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+        ],
+
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security/security.log'),
+            'level' => 'info',
+            'days' => 90,
+            'formatter' => JsonFormatter::class,
+        ],
+
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit/audit.log'),
+            'level' => 'info',
+            'days' => 365,
+            'formatter' => JsonFormatter::class,
+        ],
+
+        // En producción este canal usaría driver 'slack' apuntando a un
+        // canal de incidentes vía webhook. Para el entorno local usamos
+        // un archivo aparte para no depender de servicios externos.
+        'critical' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/critical.log'),
+            'level' => 'critical',
         ],
 
         'null' => [

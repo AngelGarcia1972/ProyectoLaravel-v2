@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ContentSecurityPolicy;
+use App\Http\Middleware\EsAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->throttleApi();
+
+        $middleware->alias([
+            'es.admin' => EsAdmin::class,
+        ]);
 
         $middleware->validateCsrfTokens(except: [
             'comentarios/sin-csrf',

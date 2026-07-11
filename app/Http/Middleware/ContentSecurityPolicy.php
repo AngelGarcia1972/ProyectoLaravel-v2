@@ -15,12 +15,12 @@ class ContentSecurityPolicy
         $nonce = csrf_token();
 
         $policy = "default-src 'self'; "
-                . "script-src 'self' 'nonce-{$nonce}'; "
-                . "style-src 'self' 'unsafe-inline'; "
-                . "img-src 'self' data: https:; "
-                . "font-src 'self'; "
-                . "connect-src 'self'; "
-                . "frame-ancestors 'none'";
+                ."script-src 'self' 'nonce-{$nonce}'; "
+                ."style-src 'self' 'unsafe-inline'; "
+                ."img-src 'self' data: https:; "
+                ."font-src 'self'; "
+                ."connect-src 'self'; "
+                ."frame-ancestors 'none'";
 
         $response->headers->set('Content-Security-Policy', $policy);
 

@@ -26,11 +26,11 @@ class IntentosLoginSospechosos extends Notification
     {
         return (new MailMessage)
             ->subject('⚠️ Intentos de inicio de sesión sospechosos')
-            ->greeting('Hola ' . $notifiable->name)
+            ->greeting('Hola '.$notifiable->name)
             ->line('Se han detectado 3 o más intentos fallidos de inicio de sesión en tu cuenta.')
-            ->line('Dirección IP del atacante: **' . $this->ip . '**')
+            ->line('Dirección IP del atacante: **'.$this->ip.'**')
             ->line('Si fuiste tú, ignora este mensaje. Si no reconoces esta actividad, cambia tu contraseña inmediatamente.')
             ->action('Ir a mi perfil', url('/perfil'))
-            ->salutation('Saludos, ' . config('app.name'));
+            ->salutation('Saludos, '.config('app.name'));
     }
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\ProductoDemoController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\NewPasswordController;
+use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,19 +43,29 @@ Route::middleware(['auth'])->group(function () {
     })->name('perfil');
 
     Route::prefix('perfil/2fa')->name('perfil.2fa.')->group(function () {
-        Route::post('/enable', [TwoFactorController::class, 'enable'])->name('enable')->middleware('password.confirm');
+        Route::get('/habilitar', [TwoFactorController::class, 'habilitar'])->name('habilitar')->middleware('password.confirm');
         Route::get('/qr', [TwoFactorController::class, 'qr'])->name('qr');
         Route::post('/disable', [TwoFactorController::class, 'disable'])->name('disable');
     });
+
+    /*
+     * Rutas para demostración de auditoría (Práctica 8)
+     */
+    Route::post('/productos/{producto}/eliminar', [ProductoController::class, 'destroy'])
+        ->name('productos.destroy');
+
+    Route::get('/admin/panel-restringido', function () {
+        return view('admin.panel');
+    })->middleware('es.admin')->name('admin.panel');
 });
 
 /*
  * Sobrescritura de rutas Fortify con throttle adicional
  */
 Route::post('/forgot-password', function (Request $request) {
-    return app(\Laravel\Fortify\Http\Controllers\PasswordResetLinkController::class)->store($request);
+    return app(PasswordResetLinkController::class)->store($request);
 })->middleware(['throttle:sensible'])->name('password.email');
 
 Route::post('/reset-password', function (Request $request) {
-    return app(\Laravel\Fortify\Http\Controllers\NewPasswordController::class)->store($request);
+    return app(NewPasswordController::class)->store($request);
 })->middleware(['throttle:sensible'])->name('password.update');

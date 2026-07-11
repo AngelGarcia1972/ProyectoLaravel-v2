@@ -18,7 +18,7 @@ class ProductoDemoController extends Controller
         $nombre = $request->query('nombre', '');
 
         // ⚠️ DEMO ONLY — INTENTIONALLY VULNERABLE FOR SCHOOL PRACTICE, NEVER USE IN PRODUCTION
-        $sql = "SELECT * FROM productos WHERE nombre = '" . $nombre . "'";
+        $sql = "SELECT * FROM productos WHERE nombre = '".$nombre."'";
         $productos = DB::select($sql);
 
         // Mostramos también la consulta generada para que se vea el efecto

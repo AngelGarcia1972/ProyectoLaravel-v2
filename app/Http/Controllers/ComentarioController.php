@@ -10,6 +10,7 @@ class ComentarioController extends Controller
     public function index()
     {
         $comentarios = Comentario::latest()->get();
+
         return view('comentarios.index', compact('comentarios'));
     }
 
@@ -24,21 +25,22 @@ class ComentarioController extends Controller
     public function createSinProteccion()
     {
         $comentarios = Comentario::latest()->get();
+
         return view('comentarios.create-sin-csrf', compact('comentarios'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'titulo'    => ['required', 'string', 'max:200', 'regex:/^[\w\sáéíóúüñÁÉÍÓÚÜÑ,.\-!¡¿?()]+$/u'],
+            'titulo' => ['required', 'string', 'max:200', 'regex:/^[\w\sáéíóúüñÁÉÍÓÚÜÑ,.\-!¡¿?()]+$/u'],
             'contenido' => ['required', 'string', 'max:5000'],
-            'email'     => ['required', 'email:rfc,dns'],
+            'email' => ['required', 'email:rfc,dns'],
         ]);
 
         $comentario = Comentario::create([
-            'titulo'    => strip_tags($validated['titulo']),
+            'titulo' => strip_tags($validated['titulo']),
             'contenido' => strip_tags($validated['contenido']),
-            'email'     => $validated['email'],
+            'email' => $validated['email'],
         ]);
 
         /*
@@ -65,9 +67,9 @@ class ComentarioController extends Controller
     public function storeSinProteccion(Request $request)
     {
         $comentario = Comentario::create([
-            'titulo'    => $request->input('titulo'),
+            'titulo' => $request->input('titulo'),
             'contenido' => $request->input('contenido'),
-            'email'     => $request->input('email'),
+            'email' => $request->input('email'),
         ]);
 
         $comentario->raw_version = $request->input('contenido');

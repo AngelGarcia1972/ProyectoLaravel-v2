@@ -9,7 +9,7 @@ use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
 
 class TwoFactorController extends Controller
 {
-    public function enable(Request $request, EnableTwoFactorAuthentication $enable)
+    public function habilitar(Request $request, EnableTwoFactorAuthentication $enable)
     {
         $enable($request->user());
 
@@ -20,7 +20,7 @@ class TwoFactorController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->two_factor_secret) {
+        if (! $user->two_factor_secret) {
             return redirect('/perfil')->with('status', 'Primero debes habilitar 2FA.');
         }
 

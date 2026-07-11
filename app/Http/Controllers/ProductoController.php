@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
+use App\Services\AuditoriaService;
 use Illuminate\Http\Request;
 
 class ProductoController extends Controller
@@ -10,6 +11,7 @@ class ProductoController extends Controller
     public function index()
     {
         $productos = Producto::orderBy('id')->paginate(15);
+
         return view('productos.index', compact('productos'));
     }
 
@@ -18,7 +20,7 @@ class ProductoController extends Controller
         $query = Producto::query();
 
         if ($request->filled('nombre')) {
-            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+            $query->where('nombre', 'like', '%'.$request->nombre.'%');
         }
 
         if ($request->filled('precio_max')) {
@@ -37,5 +39,17 @@ class ProductoController extends Controller
         }
 
         return view('productos.buscar', compact('productos'));
+    }
+
+    public function destroy(Producto $producto)
+    {
+        AuditoriaService::log('PRODUCTO_ELIMINADO', [
+            'producto_id' => $producto->id,
+            'producto_nombre' => $producto->nombre,
+        ]);
+
+        $producto->delete();
+
+        return response()->json(['mensaje' => 'Eliminado']);
     }
 }

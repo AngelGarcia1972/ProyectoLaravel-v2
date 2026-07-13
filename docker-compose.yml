@@ -1,4 +1,18 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - storage_volume:/var/www/html/storage
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
   redis:
     image: redis:alpine
     ports:
@@ -30,6 +44,9 @@ services:
       - app-network
     depends_on:
       - elasticsearch
+
+volumes:
+  storage_volume:
 
 networks:
   app-network:

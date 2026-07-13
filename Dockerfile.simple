@@ -1,0 +1,49 @@
+# ⚠️ COMPARISON ONLY — demonstrates a naive, unoptimized, insecure build (larger image, runs as root, includes dev dependencies and build tools in the final image). Do not use in production.
+
+FROM php:8.4-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    libsqlite3-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_sqlite mbstring pcntl bcmath gd zip exif \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+
+WORKDIR /var/www/html
+
+COPY . .
+
+# Install PHP dependencies WITH dev dependencies (anti-pattern: no --no-dev)
+RUN composer install --no-scripts
+
+# Run post-autoload-dump
+RUN composer run-script post-autoload-dump
+
+# Install npm dependencies and build frontend
+RUN npm install && npm run build
+
+# Set permissions (but still running as root — another anti-pattern)
+RUN chown -R www-data:www-data /var/www/html
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
